@@ -1,84 +1,118 @@
+<template>
+  <div class="card" @click="selectCard">
+    <div class="card-inner" :class="flippedStyles">
+      <div class="card-face is-front">
+        <img
+          :src="`/images/${value}.png`"
+          :alt="value"
+          class="card-image"
+        />
+        <img
+          v-if="matched"
+          src="/images/checkmark.svg"
+          alt="Checkmark"
+          class="icon-checkmark"
+        />
+      </div>
+      <div class="card-face is-back"></div>
+    </div>
+  </div>
+</template>
+
 <script>
-export default{
-    props:{
-        matched:{
-            type: Boolean,
-            default: false
-        },
-        position:{
-            type: Number,
-            required: true
-        },
-        value: {
-        type: String,
-            required: true
-        },
-    
-    visible:{
-        type: Boolean,
-        default: false
+import { computed } from 'vue'
+
+export default {
+  props: {
+    matched: {
+      type: Boolean,
+      default: false
+    },
+    position: {
+      type: Number,
+      required: true
+    },
+    value: {
+      type: String,
+      required: true
+    },
+    visible: {
+      type: Boolean,
+      default: false
     }
-},
-    setup(props, context){
-        const selectCard = () => {
-            context.emit('select-card',{
-                position: props.position,
-                faceValue: props.value
-            })
-        }
-    return{selectCard}
+  },
+  setup(props, context) {
+    const flippedStyles = computed(() => (props.visible ? 'is-flipped' : ''))
+
+    const selectCard = () => {
+      context.emit('select-card', {
+        position: props.position,
+        faceValue: props.value
+      })
     }
+
+    return {
+      flippedStyles,
+      selectCard
+    }
+  }
 }
 </script>
 
-<template>
-    <div class="card" @click="selectCard">
-        <div v-if="visible" class="card-face is-front">
-            <img
-  :src="`/images/${value}.png`"
-  :alt="value"
-  :style="{ width: '90px', height: '90px', margin: '15px', objectFit: 'contain' }"
-/>
-
-            <img v-if="matched" src="../../public/images/checkmark.svg"
-            class="icon-checkmark" />
-        </div>
-        <div v-else class="card-face is-back">
-            
-        </div>
-    </div>
-</template>
-
-<style>
+<style scoped>
 .card {
-  position: relative;
+  width: 120px;
+  height: 120px;
+  cursor: pointer;
 }
 
-.card-face{
+.card-inner {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transition: transform 0.5s ease-in-out;
+  transform-style: preserve-3d;
+}
+
+.card-inner.is-flipped {
+  transform: rotateY(180deg);
+}
+
+.card-face {
   width: 100%;
   height: 100%;
   position: absolute;
   border-radius: 10px;
+  backface-visibility: hidden;
+  top: 0;
+  left: 0;
 }
-.card-face.is-front{
+
+.card-face.is-front {
   background-image: url('../../public/images/card-bg-empty.png');
   background-position: center;
-  background-size: 100%;
-  color: white;
+  background-size: cover;
+  transform: rotateY(180deg); 
 }
 
-.card-face.is-back{
+.card-face.is-back {
   background-image: url('../../public/images/card-bg.png');
   background-position: center;
-  background-size: 100%;
-  color: white;
+  background-size: cover;
+  transform: rotateY(0deg);
 }
-.icon-checkmark{
-    position: absolute;
-    width: 20px;
 
-    right: 5px;
-    bottom: 5px;
-    
+.card-image {
+  width: 90px;
+  height: 90px;
+  margin: 15px;
+  object-fit: contain;
+}
+
+.icon-checkmark {
+  position: absolute;
+  width: 20px;
+  right: 5px;
+  bottom: 5px;
 }
 </style>
