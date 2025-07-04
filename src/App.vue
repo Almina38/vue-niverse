@@ -67,13 +67,13 @@ export default {
     cardItems.forEach(item =>{
       cardList.value.push({
         value: item,
-        visible: true,
+        visible: false,
         position: null,
         matched: false
       })
       cardList.value.push({
         value: item,
-        visible: true,
+        visible: false,
         position: null,
         matched: false
       })
@@ -93,7 +93,16 @@ export default {
 
 
       if (userSelection.value[0]){
-        userSelection.value[1] = payload
+        if(userSelection.value[0].position ===
+          payload.position && 
+          userSelection.value[0].faceValue 
+          === payload.faceValue
+        ){
+          return
+        } else{
+         userSelection.value[1] = payload
+
+        }
       } else {
         userSelection.value[0] = payload
       }
