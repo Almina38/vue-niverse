@@ -1,5 +1,8 @@
 <template>
-  <h1>Vue-universe</h1>
+  <h1 class="sr-only">Vue-niverse</h1>
+<img src="/images/title.png" 
+  alt="Vue-niverse" class="title"
+  :style="{ width: '550px', height: 'auto' }" />
   <section class="game-board">
     <Card
     v-for="(card, index) in cardList"
@@ -12,7 +15,10 @@
     
   </section>
   <h2>{{ status }}</h2>
-  <button @click="restartGame">Restart game</button>
+  <button @click="restartGame"
+  class="button">
+   <img src="../public/images/restart.svg" alt="Restart Icoon">
+  Restart game</button>
 </template>
 
 <script>
@@ -62,7 +68,8 @@ export default {
       })
     }
 
-    const cardItems = [1, 2, 3, 4, 5, 6, 7, 8]
+    const cardItems = ['alien', 'asteroid', 'astronaut', 'blackhole', 'comet', 
+    'rocket', 'saturn', 'sun']
 
     cardItems.forEach(item =>{
       cardList.value.push({
@@ -144,45 +151,67 @@ export default {
 }
 </script>
 <style>
+
+html, body{
+  margin: 0;
+  padding: 0;
+
+}
+h1{
+  margin-top: 0;
+}
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
-background-image: url('../assets/page-bg.png');
+  
+  background-image: url('../public/images/page-bg3.png');
+  background-repeat: no-repeat;
+  background-position: center;
+
+  background-color: rgb(13, 6, 6);
+  height: 100vh;
+  color: #fff;
+  padding-top: 60px;
 }
 
+.button {
+  background-color: #0093A9;
+  color: white;
+  padding: 0.75rem 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  font-weight: bold;
+}
 
+.button img {
+  padding-right: 5px;
+}
 .game-board{
   display:grid;
-  grid-template-columns: 100px 100px 100px 100px;
-  grid-template-rows: 100px 100px 100px 100px;
-  grid-column-gap: 30px;
-  grid-row-gap: 30px;
+  grid-template-columns: 120px 120px 120px 120px;
+  grid-template-rows: 120px 120px 120px 120px;
+  grid-column-gap: 24px;
+  grid-row-gap: 24px;
   justify-content: center;
 }
 
-.card {
-  border: 5px solid#ccc;
-  position: relative;
-}
-
-.card-face{
-  width: 100%;
-  height: 100%;
+.sr-only {
   position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  border: 0;
+}
+.title{
+  padding-bottom: 30px;
 
 }
-.card-face.is-front{
-  background-color: red;
-  color: white;
-}
-
-.card-face.is-back{
-  background-color: blue;
-  color: white;
-}
-
 </style>
