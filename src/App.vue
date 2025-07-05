@@ -282,7 +282,11 @@ h1 {
   transition: transform 0.8s ease-in;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 769px) {
+  #app{
+    background-size: 90%;
+  }
+  
   .game-board {
     grid-template-columns: repeat(4, 90px);
     grid-template-rows: repeat(4, 90px);
@@ -304,6 +308,9 @@ h1 {
 }
 
 @media (max-width: 480px) {
+  #app{
+    background-size: 90%;
+  }
   .game-board {
     grid-template-columns: repeat(4, 80px);
     grid-template-rows: repeat(4, 80px);
