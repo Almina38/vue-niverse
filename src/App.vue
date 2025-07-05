@@ -199,9 +199,10 @@ h1 {
   text-align: center;
   color: #2c3e50;
 
-  background-image: url('../public/images/page-bg3.png');
+  background-image: url('../public/images/page-bg.png');
   background-repeat: no-repeat;
   background-position: center;
+  background-size: 80%;
 
   background-color: rgb(13, 6, 6);
   min-height: 100vh;
@@ -219,7 +220,7 @@ h1 {
 
 .description p {
   margin: 0;
-  font-size: 1rem;
+  font-size: 0.9rem;
 }
 
 .description p:last-child {
