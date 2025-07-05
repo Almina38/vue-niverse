@@ -61,8 +61,8 @@ export default {
 
 <style scoped>
 .card {
-  width: 120px;
-  height: 120px;
+  width: 110px;
+  height: 110px;
   cursor: pointer;
 }
 
@@ -92,7 +92,7 @@ export default {
   background-image: url('../../public/images/card-bg-empty.png');
   background-position: center;
   background-size: cover;
-  transform: rotateY(180deg); 
+  transform: rotateY(180deg);
 }
 
 .card-face.is-back {
@@ -103,16 +103,36 @@ export default {
 }
 
 .card-image {
-  width: 90px;
-  height: 90px;
-  margin: 15px;
+  width: 70%;
+  height: 70%;
+  margin: 15%;
   object-fit: contain;
 }
 
 .icon-checkmark {
   position: absolute;
-  width: 20px;
+  width: 20%;
   right: 5px;
   bottom: 5px;
 }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .card {
+    width: 90px;
+    height: 90px;
+  }
+}
+
+@media (max-width: 480px) {
+  .card {
+    width: 80px;
+    height: 80px;
+  }
+
+  .icon-checkmark {
+    width: 18%;
+  }
+}
+
 </style>

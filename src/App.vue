@@ -157,7 +157,7 @@ export default {
           .visible = false
           cardList.value[cardTwo.position]
           .visible = false
-          }, 2000)
+          }, 1500)
         }
         userSelection.value.length = 0
         
@@ -178,33 +178,40 @@ export default {
 }
 </script>
 <style>
-
-html, body{
+html, body {
   margin: 0;
   padding: 0;
-
 }
-h1{
+
+h1 {
   margin-top: 0;
 }
+
 #app {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  max-height: 100%;
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  
+
   background-image: url('../public/images/page-bg3.png');
   background-repeat: no-repeat;
   background-position: center;
 
   background-color: rgb(13, 6, 6);
-  height: 100vh;
+  min-height: 100vh;
   color: #fff;
-  padding-top: 60px;
+  overflow: hidden;
+  box-sizing: border-box;
+  padding-top: 5px;
 }
 
-.description{
+.description {
   font-family: "Titillium Web", sans-serif;
   font-weight: 600;
   font-style: normal;
@@ -212,28 +219,30 @@ h1{
 
 .description p {
   margin: 0;
-  font-size: 1.2rem;
-}
-.description p:last-child{
-  margin-bottom: 30px;
+  font-size: 1rem;
 }
 
-.status{
- font-family: "Titillium Web", sans-serif;
- font-weight: 300;
+.description p:last-child {
+  margin-bottom: 20px;
+}
+
+.status {
+  font-family: "Titillium Web", sans-serif;
+  font-weight: 300;
+  font-size: 1.15rem;
 }
 
 .button {
   background-color: #0093A9;
   color: white;
-  padding: 0.75rem 1rem;
+  padding: 0.5rem 1rem;
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 0 auto;
   font-weight: bold;
   font-family: "Titillium Web", sans-serif;
-  font-size: 1.1rem;
+  font-size: 1rem;
   border: 0;
   border-radius: 10px;
   cursor: pointer;
@@ -241,13 +250,16 @@ h1{
 
 .button img {
   padding-right: 5px;
+  width: 20px;
+  height: 20px;
 }
-.game-board{
-  display:grid;
-  grid-template-columns: 120px 120px 120px 120px;
-  grid-template-rows: 120px 120px 120px 120px;
-  grid-column-gap: 24px;
-  grid-row-gap: 24px;
+
+.game-board {
+  display: grid;
+  grid-template-columns: repeat(4, 110px);
+  grid-template-rows: repeat(4, 110px);
+  grid-column-gap: 14px;
+  grid-row-gap: 14px;
   justify-content: center;
 }
 
@@ -261,13 +273,65 @@ h1{
   clip: rect(0,0,0,0);
   border: 0;
 }
-.title{
-  padding-bottom: 30px;
 
+.title {
+  padding-bottom: 10px;
+  padding-top: 0px;
+  width: 100%;
+  max-width: 550px;
+  height: auto;
 }
 
-.shuffle-card-move{
+.shuffle-card-move {
   transition: transform 0.8s ease-in;
 }
+
+/* Media Queries voor Responsiveness */
+@media (max-width: 768px) {
+  .game-board {
+    grid-template-columns: repeat(4, 90px);
+    grid-template-rows: repeat(4, 90px);
+    grid-gap: 10px;
+  }
+
+  .title{
+    max-width: 450px;
+  }
+
+  .button {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.9rem;
+  }
+
+  .status {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .game-board {
+    grid-template-columns: repeat(4, 80px);
+    grid-template-rows: repeat(4, 80px);
+    grid-gap: 8px;
+  }
+
+  .description p {
+    font-size: 0.85rem;
+  }
+
+  .status {
+    font-size: 0.9rem;
+  }
+
+  .button {
+    font-size: 0.85rem;
+    padding: 0.3rem 0.6rem;
+  }
+
+  .title {
+    max-width: 300px;
+  }
+}
+
 
 </style>
