@@ -48,7 +48,7 @@ export default {
   setup() {
     const cardList = ref([])
     const userSelection = ref([])
-    const newPlayer = ref(true)
+    const newPlayer = ref(true) 
     const lockBoard = ref(false)
     const score = ref(0)
 
@@ -324,6 +324,10 @@ h1 {
   .status {
     font-size: 1rem;
   }
+
+  .score{
+    font-size: 1rem;
+  }
 }
 
 @media (max-width: 480px) {
@@ -342,6 +346,10 @@ h1 {
   }
 
   .status {
+    font-size: 0.9rem;
+  }
+  
+  .score{
     font-size: 0.9rem;
   }
 
