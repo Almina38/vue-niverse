@@ -55,6 +55,7 @@ export default {
     const startGame = () => {
       newPlayer.value = false
       restartGame()
+      
     }
 
     const status = computed(() => {
@@ -161,7 +162,7 @@ export default {
             cardList.value[cardOne.position].visible = false
             cardList.value[cardTwo.position].visible = false
             lockBoard.value = false
-          }, 1500)
+          }, 1300)
         }
 
         userSelection.value.length = 0
@@ -202,7 +203,6 @@ h1 {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-  color: #2c3e50;
 
   background-image: url('../public/images/page-bg.png');
   background-repeat: no-repeat;
@@ -211,7 +211,7 @@ h1 {
 
   background-color: rgb(0, 0, 0);
   min-height: 100vh;
-  color: #fff;
+  color: #ffffff;
   overflow: hidden;
   box-sizing: border-box;
   padding-top: 5px;
