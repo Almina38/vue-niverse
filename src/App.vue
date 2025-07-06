@@ -2,17 +2,20 @@
   <h1 class="sr-only">Vue-niverse</h1>
   <img src="/images/title.png" 
     alt="Vue-niverse" class="title"
-    :style="{ width: '550px', height: 'auto' }" />
+    :style="{ width: '500px', height: 'auto' }" />
   <section class="description">
     <p>Welcome to Vue-niverse,</p>
     <p>A card matching game powered by Vue.js 3!</p>
   </section>
 
-  <transition-group tag="section" 
+<!-- Hier wordt de hele kaartlijst getoond.
+  Elke kaart komt uit 'cardList' en heeft een unieke waarde.
+  matched = of het een paar is, visible = open of dicht, position = locatie op bord.
+  Bij klikken op een kaart roepen we flipCard aan.-->  <transition-group tag="section" 
     class="game-board" name="shuffle-card">
     <Card
       v-for="card in cardList"
-      :key="`${card.value}-${card.variant}`"
+      :key="`${card.value}-${card.variant}`" 
       :matched="card.matched"
       :value="card.value" 
       :visible="card.visible"
@@ -22,10 +25,11 @@
 
   <h2 class="status">{{ status }}</h2>
   <h3 class="score">Score: {{ score }}</h3>
-
+  
+<!-- buttons die veranderen-->
   <button v-if="newPlayer" @click="startGame" class="button">
     <img src="../public/images/play.svg" alt="Restart Icoon">
-    Start game
+    Start game 
   </button>
 
   <button v-else @click="restartGame" class="button">
@@ -33,7 +37,6 @@
     Restart game
   </button>
 </template>
-
 <script>
 import _ from 'lodash'
 import { computed, ref, watch } from 'vue'
@@ -46,19 +49,19 @@ export default {
     Card
   },
   setup() {
-    const cardList = ref([])
-    const userSelection = ref([])
-    const newPlayer = ref(true) 
-    const lockBoard = ref(false)
-    const score = ref(0)
+    const cardList = ref([]) //de lijst met alle kaarten
+    const userSelection = ref([]) //de geselecteerde kaarten (max 2)
+    const newPlayer = ref(true) //true = nog niet begonnen
+    const lockBoard = ref(false) //blokkeert input als er 2 kaarten open zijn
+    const score = ref(0) //de score van de speler
 
     const startGame = () => {
-      newPlayer.value = false
-      restartGame()
-      
+      newPlayer.value = false //spel gestart
+      restartGame() //start meteen het spel
     }
 
     const status = computed(() => {
+      //tekst die laat zien of je nog bezig bent of hebt gewonnen
       if (remainingPairs.value === 0) {
         return 'Player wins!'
       } else {
@@ -67,6 +70,7 @@ export default {
     })
 
     const remainingPairs = computed(() => {
+      //tel hoeveel kaarten nog niet matched zijn, deel door 2 = aantal paren
       const remainingCards = cardList.value.filter(
         card => card.matched === false
       ).length
@@ -74,41 +78,45 @@ export default {
     })
 
     const restartGame = () => {
+      //shuffle de kaarten opnieuw en zet alles terug naar begin
       cardList.value = _.shuffle(cardList.value)
 
       cardList.value = cardList.value.map((card, index) => {
         return {
           ...card,
-          matched: false,
+          matched: false, //geen kaarten matched bij begin
           position: index,
-          visible: false
+          visible: false //alle kaarten omgedraaid
         }
       })
 
-      userSelection.value = []
-      score.value = 0
+      userSelection.value = [] //selecties resetten
+      score.value = 0 //score resetten
     }
 
-    const cardItems = ['alien', 'asteroid', 'astronaut', 'blackhole', 'comet', 
-      'rocket', 'saturn', 'sun']
+    //set kaarten met 8 paren (16 kaarten)
+    const cardItems = ['alien', 'saturn', 'astronaut', 'blackhole', 'comet', 
+      'rocket', 'asteroid', 'sun']
 
+    // elke kaart 2x in de lijst met een variant erbij
     cardItems.forEach(item => {
       cardList.value.push({
         value: item,
         variant: 1,
-        visible: false,
+        visible: false, //kaart dicht
         position: null,
         matched: false
       })
       cardList.value.push({
         value: item,
         variant: 2,
-        visible: true,
+        visible: true, //2e kaart van set open voor presentatie
         position: null,
         matched: false
       })
     })
 
+    //stel de positie in (na toevoegen)
     cardList.value = cardList.value.map((card, index) => {
       return {
         ...card,
@@ -117,30 +125,31 @@ export default {
     })
 
     const flipCard = (payload) => {
-      if (lockBoard.value) return
-
+      if (lockBoard.value) return //voorkomt klikken tijdens animatie
       const selectedCard = cardList.value[payload.position]
-      if (selectedCard.matched || selectedCard.visible) return
 
-      selectedCard.visible = true
+      if (selectedCard.matched || selectedCard.visible) return //al matched of open? negeren
+
+      selectedCard.visible = true //laat kaart zien
 
       if (userSelection.value[0]) {
+        //als al 1 kaart geselecteerd is
         if (
           userSelection.value[0].position === payload.position &&
           userSelection.value[0].faceValue === payload.faceValue
         ) {
-          return
+          return //dubbel klikken op dezelfde kaart negeren
         } else {
-          userSelection.value[1] = payload
+          userSelection.value[1] = payload //tweede kaart geselecteerd
         }
       } else {
-        userSelection.value[0] = payload
+        userSelection.value[0] = payload //eerste kaart geselecteerd
       }
     }
 
     watch(remainingPairs, currentValue => {
       if (currentValue === 0) {
-        launchConfetti()
+        launchConfetti() //confetti als user wint
       }
     })
 
@@ -149,23 +158,25 @@ export default {
         const cardOne = currentValue[0]
         const cardTwo = currentValue[1]
 
-        lockBoard.value = true
+        lockBoard.value = true //blokkeer verder klikken
 
         if (cardOne.faceValue === cardTwo.faceValue) {
+          //match gevonden
           cardList.value[cardOne.position].matched = true
           cardList.value[cardTwo.position].matched = true
-          score.value += 10
-          lockBoard.value = false
+          score.value += 10 //punten erbij
+          lockBoard.value = false //opnieuw klikken mag
         } else {
-          score.value = Math.max(0, score.value - 2) //nooit lager dan 0
+          score.value = Math.max(0, score.value - 2) //punten eraf, maar niet onder 0
           setTimeout(() => {
+            //kaarten weer verbergen
             cardList.value[cardOne.position].visible = false
             cardList.value[cardTwo.position].visible = false
             lockBoard.value = false
-          }, 1300)
+          }, 1300) //wachttijd flip
         }
 
-        userSelection.value.length = 0
+        userSelection.value.length = 0 //reset selectie
       }
     }, { deep: true })
 
@@ -182,6 +193,7 @@ export default {
   }
 }
 </script>
+
 
 <style>
 html, body {
