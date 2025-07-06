@@ -199,7 +199,7 @@ h1 {
   background-position: center;
   background-size: 80%;
 
-  background-color: rgb(13, 6, 6);
+  background-color: rgb(0, 0, 0);
   min-height: 100vh;
   color: #fff;
   overflow: hidden;
