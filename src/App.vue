@@ -21,6 +21,7 @@
   </transition-group>
 
   <h2 class="status">{{ status }}</h2>
+  <h3 class="score">Score: {{ score }}</h3>
 
   <button v-if="newPlayer" @click="startGame" class="button">
     <img src="../public/images/play.svg" alt="Restart Icoon">
@@ -49,6 +50,7 @@ export default {
     const userSelection = ref([])
     const newPlayer = ref(true)
     const lockBoard = ref(false)
+    const score = ref(0)
 
     const startGame = () => {
       newPlayer.value = false
@@ -83,6 +85,7 @@ export default {
       })
 
       userSelection.value = []
+      score.value = 0
     }
 
     const cardItems = ['alien', 'asteroid', 'astronaut', 'blackhole', 'comet', 
@@ -147,11 +150,13 @@ export default {
 
         lockBoard.value = true
 
-        if (cardOne.faceValue == cardTwo.faceValue) {
+        if (cardOne.faceValue === cardTwo.faceValue) {
           cardList.value[cardOne.position].matched = true
           cardList.value[cardTwo.position].matched = true
+          score.value += 10
           lockBoard.value = false
         } else {
+          score.value = Math.max(0, score.value - 2) //nooit lager dan 0
           setTimeout(() => {
             cardList.value[cardOne.position].visible = false
             cardList.value[cardTwo.position].visible = false
@@ -170,7 +175,8 @@ export default {
       status,
       restartGame,
       startGame,
-      newPlayer
+      newPlayer,
+      score
     }
   }
 }
@@ -229,7 +235,16 @@ h1 {
 .status {
   font-family: "Titillium Web", sans-serif;
   font-weight: 300;
-  font-size: 1.15rem;
+  font-size: 1.1rem;
+  margin-bottom: 0px;
+}
+
+.score {
+  font-family: "Titillium Web", sans-serif;
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+  margin-top: 0px;
 }
 
 .button {
@@ -286,15 +301,15 @@ h1 {
   transition: transform 0.8s ease-in;
 }
 
-@media (max-width: 769px) {
+@media (max-width: 768px) {
   #app {
     background-size: 90%;
   }
-  
+
   .game-board {
     grid-template-columns: repeat(4, 90px);
     grid-template-rows: repeat(4, 90px);
-    grid-gap: 10px;
+    grid-gap: 15px;
   }
 
   .title {
@@ -319,7 +334,7 @@ h1 {
   .game-board {
     grid-template-columns: repeat(4, 80px);
     grid-template-rows: repeat(4, 80px);
-    grid-gap: 8px;
+    grid-gap: 10px;
   }
 
   .description p {
