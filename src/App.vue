@@ -114,7 +114,11 @@ export default {
 
     const flipCard = (payload) => {
       if (lockBoard.value) return
-      cardList.value[payload.position].visible = true
+
+      const selectedCard = cardList.value[payload.position]
+      if (selectedCard.matched || selectedCard.visible) return
+
+      selectedCard.visible = true
 
       if (userSelection.value[0]) {
         if (
@@ -283,7 +287,7 @@ h1 {
 }
 
 @media (max-width: 769px) {
-  #app{
+  #app {
     background-size: 90%;
   }
   
@@ -308,9 +312,10 @@ h1 {
 }
 
 @media (max-width: 480px) {
-  #app{
+  #app {
     background-size: 90%;
   }
+
   .game-board {
     grid-template-columns: repeat(4, 80px);
     grid-template-rows: repeat(4, 80px);
