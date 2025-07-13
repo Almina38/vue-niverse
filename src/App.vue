@@ -64,9 +64,11 @@
 
 <script>
 import _ from 'lodash'
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, onMounted } from 'vue'
 import { launchConfetti } from './utilities/confetti'
 import Card from './components/Card.vue'
+import { db } from '../firebase'
+import { collection, addDoc, getDocs, query, orderBy, limit } from 'firebase/firestore'
 
 export default {
   name: 'App',
@@ -88,15 +90,17 @@ export default {
     const showNamePopup = ref(true) // popup bij binnenkomst tonen
     const showHighscorePanel = ref(false) // highscore panel rechts zichtbaar
 
-    // LocalStorage laden
-    const savedScores = localStorage.getItem('vueNiverseHighscoreList')
-    if (savedScores) {
-      try {
-        highscoreList.value = JSON.parse(savedScores)
-      } catch {
-        highscoreList.value = []
-      }
+    // Laad highscores van Firestore
+    async function fetchHighscores() {
+      const q = query(collection(db, 'highscores'), orderBy('score', 'desc'), limit(5))
+      const querySnapshot = await getDocs(q)
+      highscoreList.value = []
+      querySnapshot.forEach(doc => {
+        highscoreList.value.push(doc.data())
+      })
     }
+
+    onMounted(fetchHighscores)
 
     // Begin spel functie blijft ongewijzigd
     const startGame = () => {
@@ -140,7 +144,8 @@ export default {
     }
 
     //namen van kaarten
-    const cardItems = ['alien', 'saturn', 'astronaut', 'blackhole', 'comet', 'rocket', 'asteroid', 'sun']
+    const cardItems = ['alien', 
+    'saturn', 'astronaut', 'blackhole', 'comet', 'rocket', 'asteroid', 'sun']
 
     //zet kaartlijst in het begin klaar met 8 paren, 2 varianten per paar
     if (cardList.value.length === 0) {
@@ -195,12 +200,13 @@ export default {
     }
 
     //kijk of er geen paren meer zijn, dan confetti en highscore opslaan
-    watch(remainingPairs, (currentValue) => {
+    watch(remainingPairs, async (currentValue) => {
       if (currentValue === 0) {
         launchConfetti() //confetti bij winnen
 
         if (playerName.value.trim() && score.value > 0) {
-          addHighscore(playerName.value.trim(), score.value) //voeg toe aan highscore lijst
+          await addHighscore(playerName.value.trim(), score.value) //voeg toe aan highscore lijst
+          await fetchHighscores() //vernieuw lijst
           showHighscorePanel.value = true //toon lijst
         }
       }
@@ -233,12 +239,12 @@ export default {
       }
     }, { deep: true })
 
-    //highscore toevoegen aan lijst en localStorage opslaan
-    function addHighscore(name, score) {
-      highscoreList.value.push({ name, score }) //toevoegen
-      highscoreList.value.sort((a, b) => b.score - a.score) //sorteren op hoogste score
-      if (highscoreList.value.length > 5) highscoreList.value.splice(5) //max 5 scores
-      localStorage.setItem('vueNiverseHighscoreList', JSON.stringify(highscoreList.value)) //opslaan
+    //highscore toevoegen aan firestore
+    async function addHighscore(name, score) {
+      await addDoc(collection(db, 'highscores'), {
+        name,
+        score
+      })
     }
 
     //naam bevestigen bij popup
@@ -276,6 +282,7 @@ export default {
   }
 }
 </script>
+
 
 <style>
 html, body {
@@ -395,12 +402,11 @@ h1 {
   transition: transform 0.8s ease-in;
 }
 
-/* Highscore panel kleiner & namen uppercase */
 .highscore-panel {
   position: fixed;
   top: 80px;
   right: 10px;
-  width: 170px; /* kleiner gemaakt */
+  width: 170px; 
   max-height: 60vh;
   overflow-y: auto;
   background: rgba(0,0,0,0.8);
