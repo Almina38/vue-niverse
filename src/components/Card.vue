@@ -134,5 +134,4 @@ export default {
     width: 18%;
   }
 }
-
 </style>

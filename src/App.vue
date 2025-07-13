@@ -8,10 +8,11 @@
     <p>A card matching game powered by Vue.js 3!</p>
   </section>
 
-<!-- Hier wordt de hele kaartlijst getoond.
-  Elke kaart komt uit 'cardList' en heeft een unieke waarde.
-  matched = of het een paar is, visible = open of dicht, position = locatie op bord.
-  Bij klikken op een kaart roepen we flipCard aan.-->  <transition-group tag="section" 
+  <!-- Hier wordt de hele kaartlijst getoond.
+    Elke kaart komt uit 'cardList' en heeft een unieke waarde.
+    matched = of het een paar is, visible = open of dicht, position = locatie op bord.
+    Bij klikken op een kaart roepen we flipCard aan.-->  
+  <transition-group tag="section" 
     class="game-board" name="shuffle-card">
     <Card
       v-for="card in cardList"
@@ -26,7 +27,7 @@
   <h2 class="status">{{ status }}</h2>
   <h3 class="score">Score: {{ score }}</h3>
   
-<!-- buttons die veranderen-->
+  <!-- buttons die veranderen-->
   <button v-if="newPlayer" @click="startGame" class="button">
     <img src="../public/images/play.svg" alt="Restart Icoon">
     Start game 
@@ -36,7 +37,31 @@
     <img src="../public/images/restart.svg" alt="Restart Icoon">
     Restart game
   </button>
+
+  <!-- Highscores panel rechts -->
+  <aside v-if="showHighscorePanel" class="highscore-panel">
+    <h3>Highscores</h3>
+    <ol>
+      <li v-for="(entry, i) in highscoreList" :key="i">
+        {{ entry.name }} - {{ entry.score }}
+      </li>
+    </ol>
+  </aside>
+
+  <!-- Naam-popup bij binnenkomst -->
+  <div v-if="showNamePopup" class="name-popup-backdrop">
+    <div class="name-popup">
+      <h2>Enter your name for Highscores</h2>
+      <input type="text" v-model="playerName" placeholder="Your name" @keyup.enter="confirmName" />
+      <div class="popup-buttons">
+        <button :disabled="!playerName.trim()" @click="confirmName" class="button">Confirm</button>
+        <button @click="skipName" class="button">Skip</button>
+      </div>
+    </div>
+  </div>
+
 </template>
+
 <script>
 import _ from 'lodash'
 import { computed, ref, watch } from 'vue'
@@ -55,13 +80,34 @@ export default {
     const lockBoard = ref(false) //blokkeert input als er 2 kaarten open zijn
     const score = ref(0) //de score van de speler
 
+    // Highscore & spelernaam
+    const highscoreList = ref([])
+    const playerName = ref('')
+
+    // Popup controls
+    const showNamePopup = ref(true) // popup bij binnenkomst tonen
+    const showHighscorePanel = ref(false) // highscore panel rechts zichtbaar
+
+    // LocalStorage laden
+    const savedScores = localStorage.getItem('vueNiverseHighscoreList')
+    if (savedScores) {
+      try {
+        highscoreList.value = JSON.parse(savedScores)
+      } catch {
+        highscoreList.value = []
+      }
+    }
+
+    // Begin spel functie blijft ongewijzigd
     const startGame = () => {
       newPlayer.value = false //spel gestart
       restartGame() //start meteen het spel
+      showHighscorePanel.value = !!playerName.value.trim() //toon highscore panel alleen als naam ingevuld
+      showNamePopup.value = false //popup weg
     }
 
+    //status geeft tekst weer hoeveel paren nog over zijn of dat speler wint
     const status = computed(() => {
-      //tekst die laat zien of je nog bezig bent of hebt gewonnen
       if (remainingPairs.value === 0) {
         return 'Player wins!'
       } else {
@@ -69,71 +115,72 @@ export default {
       }
     })
 
+    //hoeveel paren zijn er nog niet gevonden
     const remainingPairs = computed(() => {
-      //tel hoeveel kaarten nog niet matched zijn, deel door 2 = aantal paren
-      const remainingCards = cardList.value.filter(
-        card => card.matched === false
-      ).length
+      const remainingCards = cardList.value.filter(card => !card.matched).length
       return remainingCards / 2
     })
 
+    //reset en schud kaarten opnieuw, beginstand
     const restartGame = () => {
-      //shuffle de kaarten opnieuw en zet alles terug naar begin
       cardList.value = _.shuffle(cardList.value)
 
       cardList.value = cardList.value.map((card, index) => {
         return {
           ...card,
-          matched: false, //geen kaarten matched bij begin
-          position: index,
-          visible: false //alle kaarten omgedraaid
+          matched: false, //nog geen paar gevonden
+          position: index, //zet de positie
+          visible: false //kaart weer dicht
         }
       })
 
-      userSelection.value = [] //selecties resetten
+      userSelection.value = [] //selectie resetten
       score.value = 0 //score resetten
+      lockBoard.value = false //board ontgrendelen
     }
 
-    //set kaarten met 8 paren (16 kaarten)
-    const cardItems = ['alien', 'saturn', 'astronaut', 'blackhole', 'comet', 
-      'rocket', 'asteroid', 'sun']
+    //namen van kaarten
+    const cardItems = ['alien', 'saturn', 'astronaut', 'blackhole', 'comet', 'rocket', 'asteroid', 'sun']
 
-    // elke kaart 2x in de lijst met een variant erbij
-    cardItems.forEach(item => {
-      cardList.value.push({
-        value: item,
-        variant: 1,
-        visible: false, //kaart dicht
-        position: null,
-        matched: false
+    //zet kaartlijst in het begin klaar met 8 paren, 2 varianten per paar
+    if (cardList.value.length === 0) {
+      cardItems.forEach(item => {
+        cardList.value.push({
+          value: item,
+          variant: 1,
+          visible: false, //kaart dicht
+          position: null,
+          matched: false
+        })
+        cardList.value.push({
+          value: item,
+          variant: 2,
+          visible: true, //kaart open (voor presentatie)
+          position: null,
+          matched: false
+        })
       })
-      cardList.value.push({
-        value: item,
-        variant: 2,
-        visible: true, //2e kaart van set open voor presentatie
-        position: null,
-        matched: false
+
+      //zet posities na toevoegen
+      cardList.value = cardList.value.map((card, index) => {
+        return {
+          ...card,
+          position: index
+        }
       })
-    })
+    }
 
-    //stel de positie in (na toevoegen)
-    cardList.value = cardList.value.map((card, index) => {
-      return {
-        ...card,
-        position: index
-      }
-    })
-
+    //kaart omdraaien bij klikken
     const flipCard = (payload) => {
-      if (lockBoard.value) return //voorkomt klikken tijdens animatie
+      if (lockBoard.value) return //als board locked is niet klikken
       const selectedCard = cardList.value[payload.position]
 
-      if (selectedCard.matched || selectedCard.visible) return //al matched of open? negeren
+      if (selectedCard.matched || selectedCard.visible) return //kaart al open of matched negeren
 
-      selectedCard.visible = true //laat kaart zien
+      selectedCard.visible = true //kaart laten zien
 
       if (userSelection.value[0]) {
-        //als al 1 kaart geselecteerd is
+        //al 1 kaart geselecteerd
         if (
           userSelection.value[0].position === payload.position &&
           userSelection.value[0].faceValue === payload.faceValue
@@ -147,29 +194,35 @@ export default {
       }
     }
 
-    watch(remainingPairs, currentValue => {
+    //kijk of er geen paren meer zijn, dan confetti en highscore opslaan
+    watch(remainingPairs, (currentValue) => {
       if (currentValue === 0) {
-        launchConfetti() //confetti als user wint
+        launchConfetti() //confetti bij winnen
+
+        if (playerName.value.trim() && score.value > 0) {
+          addHighscore(playerName.value.trim(), score.value) //voeg toe aan highscore lijst
+          showHighscorePanel.value = true //toon lijst
+        }
       }
     })
 
-    watch(userSelection, currentValue => {
+    //als er 2 kaarten open zijn controleer of match of niet
+    watch(userSelection, (currentValue) => {
       if (currentValue.length === 2) {
         const cardOne = currentValue[0]
         const cardTwo = currentValue[1]
 
-        lockBoard.value = true //blokkeer verder klikken
+        lockBoard.value = true //blokkeer bord tijdens controle
 
         if (cardOne.faceValue === cardTwo.faceValue) {
-          //match gevonden
-          cardList.value[cardOne.position].matched = true
-          cardList.value[cardTwo.position].matched = true
+          cardList.value[cardOne.position].matched = true //kaart 1 matched
+          cardList.value[cardTwo.position].matched = true //kaart 2 matched
           score.value += 10 //punten erbij
-          lockBoard.value = false //opnieuw klikken mag
+          lockBoard.value = false //ontgrendel bord
         } else {
-          score.value = Math.max(0, score.value - 2) //punten eraf, maar niet onder 0
+          score.value = Math.max(0, score.value - 2) //punten eraf, niet onder 0
           setTimeout(() => {
-            //kaarten weer verbergen
+            //kaart weer dicht
             cardList.value[cardOne.position].visible = false
             cardList.value[cardTwo.position].visible = false
             lockBoard.value = false
@@ -180,6 +233,28 @@ export default {
       }
     }, { deep: true })
 
+    //highscore toevoegen aan lijst en localStorage opslaan
+    function addHighscore(name, score) {
+      highscoreList.value.push({ name, score }) //toevoegen
+      highscoreList.value.sort((a, b) => b.score - a.score) //sorteren op hoogste score
+      if (highscoreList.value.length > 5) highscoreList.value.splice(5) //max 5 scores
+      localStorage.setItem('vueNiverseHighscoreList', JSON.stringify(highscoreList.value)) //opslaan
+    }
+
+    //naam bevestigen bij popup
+    function confirmName() {
+      if (!playerName.value.trim()) return //niet bevestigen als leeg
+      showNamePopup.value = false //popup weg
+      showHighscorePanel.value = true //toon lijst
+    }
+
+    //popup overslaan zonder naam
+    function skipName() {
+      playerName.value = '' //naam leeg maken
+      showNamePopup.value = false //popup weg
+      showHighscorePanel.value = false //geen lijst tonen
+    }
+
     return {
       cardList,
       flipCard,
@@ -188,12 +263,19 @@ export default {
       restartGame,
       startGame,
       newPlayer,
-      score
+      score,
+
+      highscoreList,
+      playerName,
+      showNamePopup,
+      showHighscorePanel,
+
+      confirmName,
+      skipName,
     }
   }
 }
 </script>
-
 
 <style>
 html, body {
@@ -313,6 +395,90 @@ h1 {
   transition: transform 0.8s ease-in;
 }
 
+/* Highscore panel kleiner & namen uppercase */
+.highscore-panel {
+  position: fixed;
+  top: 80px;
+  right: 10px;
+  width: 170px; /* kleiner gemaakt */
+  max-height: 60vh;
+  overflow-y: auto;
+  background: rgba(0,0,0,0.8);
+  border: 2px solid #0093A9;
+  border-radius: 10px;
+  padding: 15px;
+  color: #FFD700;
+  font-family: "Titillium Web", sans-serif;
+  z-index: 1000;
+}
+
+.highscore-panel h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.highscore-panel ol {
+  padding-left: 20px;
+  margin: 0;
+}
+
+.highscore-panel li {
+  margin-bottom: 5px;
+  text-transform: uppercase; /* namen in hoofdletters */
+}
+
+.name-popup-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0,0,0,0.85);
+  display: flex;
+  justify-content: center; 
+  align-items: center;    
+  z-index: 2000;
+}
+
+.name-popup {
+  background: #000;
+  padding: 20px 25px;
+  border-radius: 12px;
+  max-width: 320px;
+  width: 90vw;
+  text-align: center;
+  color: white;
+  font-family: "Titillium Web", sans-serif;
+  box-shadow: 0 0 20px #0093A9;
+  font-size: 90%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.name-popup input {
+  width: 100%;
+  font-size: 1rem;
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  margin: 0;
+  text-align: center;
+  box-sizing: border-box;
+  max-width: 300px;
+}
+
+.popup-buttons {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  max-width: 300px;
+  gap: 10px;
+}
+
+.popup-buttons .button {
+  width: 45%;
+  padding: 0.5rem 0;
+}
+
 @media (max-width: 768px) {
   #app {
     background-size: 90%;
@@ -337,8 +503,16 @@ h1 {
     font-size: 1rem;
   }
 
-  .score{
+  .score {
     font-size: 1rem;
+  }
+
+  .highscore-panel {
+    position: static;
+    width: auto;
+    max-height: none;
+    margin-top: 15px;
+    border: 2px solid #0093A9;
   }
 }
 
@@ -361,7 +535,7 @@ h1 {
     font-size: 0.9rem;
   }
   
-  .score{
+  .score {
     font-size: 0.9rem;
   }
 
@@ -373,5 +547,22 @@ h1 {
   .title {
     max-width: 300px;
   }
+
+  .name-popup {
+    max-width: 260px;
+    padding: 15px 20px;
+  }
+
+  .name-popup input {
+    font-size: 0.9rem;
+    max-width: 240px;
+    padding: 8px;
+  }
+
+  .popup-buttons .button {
+    padding: 0.4rem 0;
+    font-size: 0.9rem;
+  }
 }
+
 </style>
