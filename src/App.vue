@@ -92,13 +92,22 @@ export default {
 
     // Laad highscores van Firestore
     async function fetchHighscores() {
-      const q = query(collection(db, 'highscores'), orderBy('score', 'desc'), limit(5))
-      const querySnapshot = await getDocs(q)
-      highscoreList.value = []
-      querySnapshot.forEach(doc => {
-        highscoreList.value.push(doc.data())
-      })
+    const q = query(collection(db, 'highscores'), orderBy('score', 'desc'), limit(100)) // wat meer ophalen
+    const querySnapshot = await getDocs(q)
+    const tempMap = new Map()
+    querySnapshot.forEach(doc => {
+      const data = doc.data()
+      const name = data.name.trim()
+      const score = data.score
+        if (!tempMap.has(name) || tempMap.get(name) < score) {
+          tempMap.set(name, score)
     }
+  })
+    highscoreList.value = Array.from(tempMap.entries())
+      .map(([name, score]) => ({ name, score }))
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 5)
+}
 
     onMounted(fetchHighscores)
 
